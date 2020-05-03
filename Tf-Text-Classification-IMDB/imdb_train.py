@@ -1,6 +1,7 @@
 # IMDB sentiment analysis from tutorial with own prediction block
 # https://www.youtube.com/watch?v=Rc2XHfk_jss
 from __future__ import absolute_import, division, print_function
+import pathlib
 
 import tensorflow as tf
 from tensorflow import keras
@@ -28,8 +29,6 @@ reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 def decode_review(text):
     return ' '.join([reverse_word_index.get(i, "?") for i in text])
 
-# print(decode_review(train_data[0]))
-
 train_data = keras.preprocessing.sequence.pad_sequences(train_data, 
                                                         value=word_index["<PAD>"],
                                                         padding="post",
@@ -43,16 +42,21 @@ test_data = keras.preprocessing.sequence.pad_sequences(test_data,
 vocab_size = 10000
 
 # create neural network
-model = keras.Sequential()
-model.add(keras.layers.Embedding(vocab_size, 16))           # input layer
-model.add(keras.layers.GlobalAveragePooling1D())            # 1st hidden layer
-model.add(keras.layers.Dense(16, activation=tf.nn.relu))    # 2nd hidden layer /w 16 hidden units
-model.add(keras.layers.Dense(1, activation=tf.nn.sigmoid))  # output layer (single output node --> 0 or 1)
+def create_model():
+    model = keras.Sequential()
+    model.add(keras.layers.Embedding(vocab_size, 16))           # input layer
+    model.add(keras.layers.GlobalAveragePooling1D())            # 1st hidden layer
+    model.add(keras.layers.Dense(16, activation=tf.nn.relu))    # 2nd hidden layer /w 16 hidden units
+    model.add(keras.layers.Dense(1, activation=tf.nn.sigmoid))  # output layer (single output node --> 0 or 1)
 
-#model.summary()
-model.compile(optimizer="adam",
-              loss="binary_crossentropy",
-              metrics=["acc"])
+    #model.summary()
+    model.compile(optimizer="adam",
+                  loss="binary_crossentropy",
+                  metrics=["acc"])
+    
+    return model
+
+model = create_model()
 
 # add validation sets
 x_val = train_data[:10000]
@@ -74,9 +78,12 @@ results = model.evaluate(test_data, test_labels)
 for name, value in zip(model.metrics_names, results):
     print("%s: %.3f" % (name, value))
 
+model.save(str(pathlib.Path(__file__).parent.absolute()) + "/imdb_model.h5")
+print("Saved model to disk")
+
 
 # make predictions
-def encode_review(text):
+""" def encode_review(text):
     return [word_index.get(i, word_index.get("<UNK>")) for i in text.split(" ")]
 
 reviews = [
@@ -88,4 +95,4 @@ for review in reviews:
     Xnew = [[0] + encode_review(review)]
     ynew = model.predict_classes(Xnew)
     # show the inputs and predicted outputs
-    print("X=%s, Predicted=%s" % (review, ynew[0]))
+    print("X=%s, Predicted=%s" % (review, ynew[0])) """
