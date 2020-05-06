@@ -186,18 +186,3 @@ def plot_graphs(history, string):
 
 model.save(str(pathlib.Path(__file__).parent.absolute()) + "/legalcase_lstm_model.h5")
 print("Saved model to disk")
-
-
-
-# make preditction on this model
-new_complaint = [
-    'Ich habe mich vor 4 Jahren aufgrund narzisstischen Missbrauches und seinem Drogenkonsum von meinem Exmann getrennt. Seitdem zerrt er mich und die Kinder immer wieder vor Gericht, bringt sie und mich immer wieder in missliche und äußerst belastende Situationen. Er schreckt auch nicht vor Straftaten wie Stalking, Einbruch, Datenmissbrauch, Diskreditieren und Diebstahl etc. zurück. Nach außen setzt er eine Maske auf, manipuliert und instrumentalisiert die Kinder und Dritte. Ich bekomme fast täglich Mails von ihm, in denen er mir existentielle Drohungen ausspricht. Ich benötige aufgrund des steten Psychoterror meines Exmannes dringend durchsetzungsstarke, fachkundige Hilfe, wenn möglich von einem Anwalt, der mit so einer Art von Persönlichkeitsstörung vertraut ist.',
-    'Beschreiben Sie bitte kurz Ihr Anliegen.: Hallo, im März 2020 fand eine AIDA-Reise von Jamaika aus statt. Der Hinflug wurde von AIDA bei Condor gebucht. Diesbezüglich gibt es für den Kreuzfahrtteilnehmer keine extra Flugbuchung, da diese von AIDA getätigt wurde. Bei Condor wurden jedoch extra Sitzplätze und ein Entertaimentpaket gebucht. Kosten insgesamt 263,94 €. Obwohl noch am Vortag die Bordkarten mit den gebuchten Sitzplätzen von Condor zur Verfügung gestellt wurden, hat man kurzfristig das Fluggerät gewechselt. Weder die gebuchten Sitzplätze noch das Entertaimentpaket konnten genutzt werden. Der Reisemangel wurde bei Condor geltend gemacht. Man verlangt dort die Originalflugbuchung, die natürlich von uns nicht vorgelegt werden kann, da der Flug von AIDA gebucht wurde. Die Bestätigung über die Zusatzleistungen, und nur darum geht es, wurde Condor vorgelegt. Dies interessiert die Condor jedoch nicht. Können Sie hier weiterhelfen? Es besteht eine RS-Versicherung bei der Roland RS-Versicherung.',
-    'Guten Tag, Kürzlich ist mein Opa gestorben. Mein Bruder sagte mir das mein Opa ihn zum allein Erben gemacht hat (Haus mit Obstgarten 2000 Quadratmeter + 8000 Quadratmeter Ackerland ). Meinen Vater und seine Stiefschwester hat er enterbt. Mein Vater will sein Pflichtteil einfordern. Zu meiner Frage: steht mir auch etwas zu oder habe ich kein Anspruch ?',
-    'Betriebsbedingte Kündigung erhalten nach 5,5 Jahren Betriebszugehörigkeit. Gründe sind für mich nicht nachvollziehbar - Abwicklungsvertrag bietet mir ca. 15.000€ an, was weniger als 3 Monatsgehälter ist. Also Laie habe ich den Eindruck (mein Arbeitgeber hat den Sitz in London und wenig Expertise im Deutschen Arbeitsrecht) das die Abfindung wesentlich höher sein sollte auch weil mein Arbeitgeber unbedingt eine Kündigungsschutzklage vermeiden will.'
-]
-seq = tokenizer.texts_to_sequences(new_complaint)
-padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH)
-predictions = model.predict(padded)
-for pred in predictions:
-    print("Legal branch predicted: {} with {}".format(labels[np.argmax(pred)], pred[np.argmax(pred)]))
