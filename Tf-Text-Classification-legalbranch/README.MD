@@ -27,7 +27,7 @@ python train_logreg.py
 
 ### Run it by:
 
-1. create a trained model and save it with
+1. create a trained model and save it with (for 1st run uncomment line 15 to download library with stopwords)
 
 ```
 python train_lstm.py

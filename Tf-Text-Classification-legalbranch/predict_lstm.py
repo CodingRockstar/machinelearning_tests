@@ -17,7 +17,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
 
-# Keras / sklearn
+# Keras
 import tensorflow as tf
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
