@@ -80,19 +80,3 @@ for name, value in zip(model.metrics_names, results):
 
 model.save(str(pathlib.Path(__file__).parent.absolute()) + "/imdb_model.h5")
 print("Saved model to disk")
-
-
-# make predictions
-""" def encode_review(text):
-    return [word_index.get(i, word_index.get("<UNK>")) for i in text.split(" ")]
-
-reviews = [
-    "This film was really awesome. Cant wait to see it again!",
-    "What a terrible movie. Hate it! Never again!",
-    "lovely film. Wonderful characters with a lovely story!"
-]
-for review in reviews:
-    Xnew = [[0] + encode_review(review)]
-    ynew = model.predict_classes(Xnew)
-    # show the inputs and predicted outputs
-    print("X=%s, Predicted=%s" % (review, ynew[0])) """
