@@ -149,16 +149,17 @@ def create_model():
     """
     model = Sequential()
     model.add(Embedding(MAX_NB_WORDS, EMBEDDING_DIM, input_length=X_train.shape[1]))
-    model.add(SpatialDropout1D(0.2))
-    model.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
+    # model.add(SpatialDropout1D(0.2))
+    model.add(LSTM(EMBEDDING_DIM, dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(10, activation='softmax'))
+    
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     print(model.summary())
 
     epochs = 4
-    batch_size = 64
+    batch_size = 16
 
-    history = model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size, validation_split=0.1, callbacks=[EarlyStopping(monitor='val_loss', patience=3, min_delta=0.0001)])
+    history = model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size, validation_split=0.1)
 
     return model, history
 
