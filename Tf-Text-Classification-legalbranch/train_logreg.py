@@ -152,6 +152,7 @@ print(classification_report(y_test, y_pred, labels=tags, zero_division=0)) """
 
 
 # logistic regression
+# https://towardsdatascience.com/multi-class-text-classification-model-comparison-and-selection-5eb066197568
 from sklearn.linear_model import LogisticRegression
 
 logreg = Pipeline([('vect', CountVectorizer()),
