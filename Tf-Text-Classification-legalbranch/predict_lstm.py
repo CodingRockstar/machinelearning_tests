@@ -100,10 +100,10 @@ df['caseDesc'] = df['caseDesc'].map(lambda x: clean_text(x))
 # The maximum number of words to be used. (most frequent)
 MAX_NB_WORDS = 50000
 # Max number of words in each legalcase
-MAX_SEQUENCE_LENGTH = 250
+MAX_SEQUENCE_LENGTH = 100
 
 
-tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True)
+tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True, oov_token="<OOV>")
 tokenizer.fit_on_texts(df['caseDesc'].values)
 word_index = tokenizer.word_index
 print('Found %s unique tokens.' % len(word_index))
@@ -111,7 +111,7 @@ print('Found %s unique tokens.' % len(word_index))
 
 # make length of case descriptions equal
 X = tokenizer.texts_to_sequences(df['caseDesc'].values)
-X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH)
+X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH, truncating='post')
 
 Y = pd.get_dummies(df['lbAlias']).values
 labels = pd.get_dummies(df['lbAlias']).columns.tolist()
@@ -132,7 +132,7 @@ validation_data['caseDesc'] = validation_data['caseDesc'].map(lambda x: clean_te
 
 for index, row in validation_data.iterrows():
     seq = tokenizer.texts_to_sequences([row['caseDesc']])
-    padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH)
+    padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH, truncating='post')
     predictions = model.predict(padded)
     pred = predictions[0]
     print("Legal branch predicted: {} (Soll: {}) with {}".format(labels[np.argmax(pred)], row['lbAlias'], pred[np.argmax(pred)]))

@@ -115,12 +115,12 @@ df['caseDesc'] = df['caseDesc'].map(lambda x: clean_text(x))
 # The maximum number of words to be used. (most frequent)
 MAX_NB_WORDS = 50000
 # Max number of words in each legalcase
-MAX_SEQUENCE_LENGTH = 250
+MAX_SEQUENCE_LENGTH = 100
 # This is fixed.
 EMBEDDING_DIM = 100
 
 
-tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True)
+tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True, oov_token="<OOV>")
 tokenizer.fit_on_texts(df['caseDesc'].values)
 word_index = tokenizer.word_index
 print('Found %s unique tokens.' % len(word_index))
@@ -128,7 +128,7 @@ print('Found %s unique tokens.' % len(word_index))
 
 # make length of case descriptions equal
 X = tokenizer.texts_to_sequences(df['caseDesc'].values)
-X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH)
+X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH, truncating='post')
 print('Shape of data tensor:', X.shape)
 
 Y = pd.get_dummies(df['lbAlias']).values
