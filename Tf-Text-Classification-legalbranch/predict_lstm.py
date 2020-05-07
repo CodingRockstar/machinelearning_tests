@@ -18,9 +18,9 @@ from nltk.stem import SnowballStemmer
 
 
 # Keras
-import tensorflow as tf
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from keras.models import load_model
 
 
 
@@ -117,7 +117,7 @@ Y = pd.get_dummies(df['lbAlias']).values
 labels = pd.get_dummies(df['lbAlias']).columns.tolist()
 
 # load / initiate model
-model = tf.keras.models.load_model(str(pathlib.Path(__file__).parent.absolute()) + "/legalcase_lstm_model.h5")
+model = load_model(str(pathlib.Path(__file__).parent.absolute()) + "/legalcase_lstm_model.h5")
 
 
 

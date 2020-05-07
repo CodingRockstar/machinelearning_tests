@@ -18,7 +18,6 @@ from nltk.stem import SnowballStemmer
 
 
 # Keras / sklearn
-import tensorflow as tf
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential

@@ -15,7 +15,7 @@ import nltk  # pip install --user -U nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
-# Keras / sklearn
+# sklearn
 from sklearn.externals import joblib
 
 

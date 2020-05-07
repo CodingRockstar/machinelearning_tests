@@ -17,8 +17,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
 
-# Keras / sklearn
-import tensorflow as tf
+# sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 
