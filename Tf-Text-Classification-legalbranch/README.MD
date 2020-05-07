@@ -1,6 +1,6 @@
-# Prediction of legal branches for legalcases
+# Prediction of legalbranches for legalcases
 
-## Multi-Class text classification 4 beginners :D
+## Multi-Class text classification for beginners
 
 
 
@@ -18,8 +18,18 @@
 
 ##  1. Tests with Naive Bayes, SVM and logarithmic regression
 
+### Run it by:
+
+1. create a trained model and save it with (for 1st run uncomment line 15 to download library with stopwords)
+
 ```
 python train_logreg.py
+```
+
+2. get predictions on a validation dataset (file legalcase_validation.json is not included!) with
+
+```
+python predict_logreg.py
 ```
 
 

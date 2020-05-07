@@ -9,17 +9,13 @@ import string
 import numpy as np
 import pandas as pd  # pip install pandas
 
-
 # nltk
 import nltk  # pip install --user -U nltk
 # nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 
-
 # Keras / sklearn
-import tensorflow as tf
-from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 
 
@@ -84,89 +80,24 @@ def clean_text(text):
     return text
 
 
-
 # load data, limit to TOP 10 categories and remove null-Values
 df = load_data("data.json")
 top10lb = list(df['lbAlias'].value_counts().head(10).index)
 df = df[df['lbAlias'].isin(top10lb)]
 
-# print(top10lb)
-# print(filteredDf.head(20))
+# load model
+logreg_model = open(str(pathlib.Path(__file__).parent.absolute()) + '/legalcase_logreg_model.pkl','rb')
+logreg = joblib.load(logreg_model)
 
-df = df.dropna()
-df = df[df.caseDesc.apply(lambda x: x != "")]
-df = df[df.lbAlias.apply(lambda x: x != "")]
+# make validation predictions here
+validation_data = load_data("legalcase_validation.json")
 
-# apply text cleaning function to df['text']
-df['text'] = df['caseDesc'].map(lambda x: clean_text(x))
-tags = pd.get_dummies(df['lbAlias']).columns.tolist()
+# filter by known legal branches
+validation_data = validation_data[validation_data['lbAlias'].isin(top10lb)]
 
-# print(df['lbAlias'].value_counts())
-# print(df.head(10))
+# sanitize text
+validation_data['caseDesc'] = validation_data['caseDesc'].map(lambda x: clean_text(x))
 
-
-X = df.text
-y = df.lbAlias
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state = 42)
-
-
-# naive bayes
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.metrics import classification_report
-""" 
-nb = Pipeline([('vect', CountVectorizer()),
-               ('tfidf', TfidfTransformer()),
-               ('clf', MultinomialNB()),
-              ])
-nb.fit(X_train, y_train)
-
-y_pred = nb.predict(X_test)
-
-print('accuracy %s' % accuracy_score(y_pred, y_test))
-print(classification_report(y_test, y_pred, labels=tags, zero_division=0)) """
-
-
-
-
-
-# support vector machine (SVM)
-""" from sklearn.linear_model import SGDClassifier
-
-sgd = Pipeline([('vect', CountVectorizer()),
-                ('tfidf', TfidfTransformer()),
-                ('clf', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, random_state=42, max_iter=5, tol=None)),
-               ])
-sgd.fit(X_train, y_train)
-
-
-y_pred = sgd.predict(X_test)
-
-print('accuracy %s' % accuracy_score(y_pred, y_test))
-print(classification_report(y_test, y_pred, labels=tags, zero_division=0)) """
-
-
-
-
-# logistic regression
-from sklearn.linear_model import LogisticRegression
-
-logreg = Pipeline([('vect', CountVectorizer()),
-                ('tfidf', TfidfTransformer()),
-                ('clf', LogisticRegression(n_jobs=1, C=1e5, max_iter=500)),
-               ])
-# train model
-logreg.fit(X_train, y_train)
-
-# test model
-y_pred = logreg.predict(X_test)
-
-print('accuracy %s' % accuracy_score(y_pred, y_test))
-print(classification_report(y_test, y_pred, labels=tags, zero_division=0))
-
-# save model to file
-joblib.dump(logreg, str(pathlib.Path(__file__).parent.absolute()) + '/legalcase_logreg_model.pkl')
-print("Saved model to disk")
+for index, row in validation_data.iterrows():
+    predictions = logreg.predict([row['caseDesc']])
+    print("Legal branch predicted: {} (Soll: {})".format(predictions[0], row['lbAlias']))
