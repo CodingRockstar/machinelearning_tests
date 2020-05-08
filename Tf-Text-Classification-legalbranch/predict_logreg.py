@@ -98,6 +98,13 @@ validation_data = validation_data[validation_data['lbAlias'].isin(top10lb)]
 # sanitize text
 validation_data['caseDesc'] = validation_data['caseDesc'].map(lambda x: clean_text(x))
 
+result = []
 for index, row in validation_data.iterrows():
     predictions = logreg.predict([row['caseDesc']])
-    print("Legal branch predicted: {} (Soll: {})".format(predictions[0], row['lbAlias']))
+    result.append([predictions[0], row['lbAlias'], (predictions[0] == row['lbAlias'])])
+
+rPd = pd.DataFrame(result, columns=['predicted', 'given', 'result'])
+print("\n# of correct predictions: {}".format(len(rPd[(rPd.result == True)])))
+print("# of incorrect predictions: {}\n".format(len(rPd[(rPd.result == False)])))
+with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', None):  # more options can be specified also
+    print(rPd)

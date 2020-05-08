@@ -130,10 +130,16 @@ validation_data = validation_data[validation_data['lbAlias'].isin(top10lb)]
 # sanitize text
 validation_data['caseDesc'] = validation_data['caseDesc'].map(lambda x: clean_text(x))
 
+result = []
 for index, row in validation_data.iterrows():
     seq = tokenizer.texts_to_sequences([row['caseDesc']])
     padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH, truncating='post')
     predictions = model.predict(padded)
     pred = predictions[0]
-    print("Legal branch predicted: {} (Soll: {}) with {}".format(labels[np.argmax(pred)], row['lbAlias'], pred[np.argmax(pred)]))
+    result.append([labels[np.argmax(pred)], row['lbAlias'], pred[np.argmax(pred)], (labels[np.argmax(pred)] == row['lbAlias'])])
     
+rPd = pd.DataFrame(result, columns=['predicted', 'given', 'accuracy', 'result'])
+print("\n# of correct predictions: {}".format(len(rPd[(rPd.result == True)])))
+print("# of incorrect predictions: {}\n".format(len(rPd[(rPd.result == False)])))
+with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', None):  # more options can be specified also
+    print(rPd)
