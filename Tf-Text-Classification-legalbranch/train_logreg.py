@@ -151,12 +151,11 @@ print(classification_report(y_test, y_pred, labels=tags, zero_division=0)) """
 
 
 # logistic regression
-# https://towardsdatascience.com/multi-class-text-classification-model-comparison-and-selection-5eb066197568
 from sklearn.linear_model import LogisticRegression
 
 logreg = Pipeline([('vect', CountVectorizer()),
                 ('tfidf', TfidfTransformer()),
-                ('clf', LogisticRegression(n_jobs=1, C=1e5, max_iter=500)),
+                ('clf', LogisticRegression(solver='saga', multi_class='auto', max_iter=500, class_weight='balanced', n_jobs=-1, random_state=4)),
                ])
 # train model
 logreg.fit(X_train, y_train)
@@ -166,6 +165,28 @@ y_pred = logreg.predict(X_test)
 
 print('accuracy %s' % accuracy_score(y_pred, y_test))
 print(classification_report(y_test, y_pred, labels=tags, zero_division=0))
+
+
+# cross validation
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(logreg, X, y, cv=10)
+print("Cross Validation Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+
+# Plot non-normalized confusion matrix
+import matplotlib.pyplot as plt
+from sklearn.metrics import plot_confusion_matrix
+
+np.set_printoptions(precision=2)
+titles_options = [("Confusion matrix, without normalization", None),
+                  ("Normalized confusion matrix", 'true')]
+for title, normalize in titles_options:
+    disp = plot_confusion_matrix(logreg, X_test, y_test,
+                                 display_labels=tags,
+                                 normalize=normalize)
+    disp.ax_.set_title(title)
+    plt.show()
+
 
 # save model to file
 joblib.dump(logreg, str(pathlib.Path(__file__).parent.absolute()) + '/legalcase_logreg_model.pkl')
