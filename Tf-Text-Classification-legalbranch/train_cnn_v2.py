@@ -23,8 +23,10 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout
 from keras import utils
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
+from sklearn.utils import class_weight
 
 
 
@@ -129,10 +131,12 @@ encoder.fit(train_tags)
 y_train = encoder.transform(train_tags)
 y_test = encoder.transform(test_tags)
 
+# get class weights for extremely imbalanced classes
+class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+
 num_classes = np.max(y_train) + 1
 y_train = utils.to_categorical(y_train, num_classes)
 y_test = utils.to_categorical(y_test, num_classes)
-
 
 # create model
 def create_model():
@@ -156,7 +160,8 @@ def create_model():
                     batch_size=batch_size,
                     epochs=epochs,
                     verbose=1,
-                    validation_split=0.1)
+                    validation_split=0.1,
+                    class_weight=class_weights)
 
     return model, history
 
