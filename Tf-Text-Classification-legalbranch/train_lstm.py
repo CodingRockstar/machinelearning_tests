@@ -21,11 +21,12 @@ from nltk.stem import SnowballStemmer
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Dense, Embedding, LSTM, SpatialDropout1D
-from sklearn.model_selection import train_test_split
+from keras.layers import Dropout, Dense, Embedding, LSTM, Bidirectional
+from keras.layers import Conv1D, MaxPooling1D, Flatten
 from keras.utils.np_utils import to_categorical
-from keras.callbacks import EarlyStopping
-from keras.layers import Dropout
+
+from sklearn.model_selection import train_test_split
+from sklearn.utils import class_weight
 
 
 # plot
@@ -114,9 +115,9 @@ df['caseDesc'] = df['caseDesc'].map(lambda x: clean_text(x))
 # The maximum number of words to be used. (most frequent)
 MAX_NB_WORDS = 50000
 # Max number of words in each legalcase
-MAX_SEQUENCE_LENGTH = 100
+MAX_SEQUENCE_LENGTH = 250
 # This is fixed.
-EMBEDDING_DIM = 100
+EMBEDDING_DIM = 128
 
 
 tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True, oov_token="<OOV>")
@@ -127,19 +128,32 @@ print('Found %s unique tokens.' % len(word_index))
 
 # make length of case descriptions equal
 X = tokenizer.texts_to_sequences(df['caseDesc'].values)
-X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH, truncating='post')
+X = pad_sequences(X, maxlen=MAX_SEQUENCE_LENGTH)
 print('Shape of data tensor:', X.shape)
 
-Y = pd.get_dummies(df['lbAlias']).values
+y = pd.get_dummies(df['lbAlias']).values
 labels = pd.get_dummies(df['lbAlias']).columns.tolist()
-print('Shape of label tensor:', Y.shape)
+print('Shape of label tensor:', y.shape)
 
 
 # separate training and test data sets
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.10, random_state = 42)
-print(X_train.shape, Y_train.shape)
-print(X_test.shape, Y_test.shape)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.10)
+print(X_train.shape, y_train.shape)
+print(X_test.shape, y_test.shape)
 
+
+# get class weights for extremely imbalanced classes
+class_weights = class_weight.compute_class_weight('balanced', np.unique(df['lbAlias']), df['lbAlias'])
+
+
+'''
+# SMOTE oversampling
+print("Before oversampling: ", X_train.shape)
+from imblearn.over_sampling import SMOTE
+sm = SMOTE(random_state=4)
+train_text_res, train_y_res = sm.fit_resample(X_train, y_train)
+print("After oversampling: ", train_text_res.shape)
+'''
 
 # create model: RNN --> LSTM
 def create_model():
@@ -149,17 +163,17 @@ def create_model():
     """
     model = Sequential()
     model.add(Embedding(MAX_NB_WORDS, EMBEDDING_DIM, input_length=X_train.shape[1]))
-    # model.add(SpatialDropout1D(0.2))
-    model.add(LSTM(EMBEDDING_DIM, dropout=0.2, recurrent_dropout=0.2))
+    model.add(Bidirectional(LSTM(64)))
+    model.add(Dropout(0.5))
     model.add(Dense(10, activation='softmax'))
-    
+
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     print(model.summary())
 
     epochs = 4
-    batch_size = 16
+    batch_size = 64
 
-    history = model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size, validation_split=0.1)
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.1, class_weight=class_weights)
 
     return model, history
 
@@ -167,9 +181,16 @@ def create_model():
 model, history = create_model()
 
 
-# evaluate model
-accr = model.evaluate(X_test, Y_test)
-print('Test set\n  Loss: {:0.3f}\n  Accuracy: {:0.3f}'.format(accr[0], accr[1]))
+# evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test, verbose=2)
+print('Accuracy: %f' % (accuracy*100))
+
+'''
+from sklearn.metrics import classification_report,confusion_matrix
+Y_pred = model.predict(X_test)
+y_pred = np.array([np.argmax(pred) for pred in Y_pred])
+print('Classification Report:\n', classification_report(y_test, y_pred), '\n')
+'''
 
 
 # create graphics

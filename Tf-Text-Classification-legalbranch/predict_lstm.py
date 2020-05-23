@@ -100,7 +100,7 @@ df['caseDesc'] = df['caseDesc'].map(lambda x: clean_text(x))
 # The maximum number of words to be used. (most frequent)
 MAX_NB_WORDS = 50000
 # Max number of words in each legalcase
-MAX_SEQUENCE_LENGTH = 100
+MAX_SEQUENCE_LENGTH = 128
 
 
 tokenizer = Tokenizer(num_words=MAX_NB_WORDS, filters='0123456789!"#$%&()*+,-./:;<=>?@[\]^_`{|}~', lower=True, oov_token="<OOV>")
